@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>codex</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      background: #1E1E1E;
+      color: #FFFFFF;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 12px;
+      padding: 0;
+      overflow: hidden;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      padding: 12px 8px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #A0A0A0;
+      margin-bottom: 12px;
+    }
+
+    .button {
+      width: 100%;
+      padding: 8px 12px;
+      padding-left: 12px;
+      background: #2D2D2D;
+      border: 1px solid #3D3D3D;
+      color: #FFFFFF;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      transition: all 0.2s;
+      text-align: left;
+    }
+
+    .button:hover:not(:disabled) {
+      background: #3D3D3D;
+      border-color: #4D4D4D;
+    }
+
+    .button:active:not(:disabled) {
+      background: #252525;
+    }
+
+    .button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .button-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .button-content {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .button-icon {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+
+    .coming-soon {
+      font-size: 10px;
+      color: #808080;
+      font-weight: 400;
+    }
+
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 0;
+      border-top: 1px solid #3D3D3D;
+      margin-top: auto;
+      gap: 16px;
+    }
+
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .theme-toggle-label {
+      font-size: 11px;
+      color: #A0A0A0;
+      font-weight: 500;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 40px;
+      height: 20px;
+      background: #3D3D3D;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle-switch.active {
+      background: #18A0FB;
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.2s;
+    }
+
+    .toggle-switch.active::after {
+      transform: translateX(20px);
+    }
+
+    /* Light mode styles */
+    body.light-mode {
+      background: #FFFFFF;
+      color: #1E1E1E;
+    }
+
+    body.light-mode .section-title {
+      color: #666666;
+    }
+
+    body.light-mode .button {
+      background: #F5F5F5;
+      border: 1px solid #E0E0E0;
+      color: #1E1E1E;
+    }
+
+    body.light-mode .button:hover:not(:disabled) {
+      background: #E8E8E8;
+      border-color: #D0D0D0;
+    }
+
+    body.light-mode .button:active:not(:disabled) {
+      background: #DDDDDD;
+    }
+
+    body.light-mode .coming-soon {
+      color: #999999;
+    }
+
+    body.light-mode .footer {
+      border-top: 1px solid #E0E0E0;
+    }
+
+    body.light-mode .theme-toggle-label {
+      color: #666666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="content">
+      <div class="section">
+    <div class="section-title">Creation</div>
+    <button class="button" id="create-from-scratch">
+      <span class="button-label">
+        <span class="button-content">
+          <svg class="button-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="24" height="24" rx="4" fill="#18A0FB"/>
+            <path d="M12 7V17M7 12H17" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>New project</span>
+        </span>
+      </span>
+    </button>
+    <button class="button" id="support-task">
+      <span class="button-label">
+        <span class="button-content">
+          <svg class="button-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="24" height="24" rx="4" fill="#EFA929"/>
+            <path d="M7 17L17 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M17 7L15 5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M17 7L19 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M7 17L5 15" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M7 17L9 19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="17.5" y="4.5" width="3" height="3" rx="0.5" stroke="white" stroke-width="1.5" fill="none"/>
+          </svg>
+          <span>Update existing</span>
+        </span>
+      </span>
+    </button>
+    <button class="button" id="todo" disabled>
+      <span class="button-label">
+        <span>Todo</span>
+        <span class="coming-soon">(Coming Soon)</span>
+      </span>
+    </button>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Handoff</div>
+    <button class="button" id="new-screens">
+      <span class="button-label">
+        <span class="button-content">
+          <svg class="button-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="24" height="24" rx="4" fill="#01AD71"/>
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <path d="M14 2v6h6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>New screens</span>
+        </span>
+      </span>
+    </button>
+    <button class="button" id="new-assets">
+      <span class="button-label">
+        <span class="button-content">
+          <svg class="button-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="24" height="24" rx="4" fill="#8854C0"/>
+            <rect x="6" y="6" width="6" height="6" rx="1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <rect x="8" y="8" width="6" height="6" rx="1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+          <span>New assets</span>
+        </span>
+      </span>
+    </button>
+    </div>
+    </div>
+    <div class="footer">
+      <button class="button" id="sync" disabled>
+        <span class="button-label">
+          <span>Sync</span>
+          <span class="coming-soon">(Coming Soon)</span>
+        </span>
+      </button>
+      <div class="theme-toggle">
+        <span class="theme-toggle-label">Light Mode</span>
+        <div class="toggle-switch" id="theme-toggle"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DOM ready check
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+
+    let lightMode = false;
+
+    function init() {
+      const createFromScratch = document.getElementById('create-from-scratch');
+      const supportTask = document.getElementById('support-task');
+      const newScreens = document.getElementById('new-screens');
+      const newAssets = document.getElementById('new-assets');
+      const themeToggle = document.getElementById('theme-toggle');
+
+      // Theme toggle handler
+      themeToggle.addEventListener('click', () => {
+        lightMode = !lightMode;
+        themeToggle.classList.toggle('active', lightMode);
+        document.body.classList.toggle('light-mode', lightMode);
+        // Send light mode preference to plugin
+        parent.postMessage({ pluginMessage: { type: 'set-light-mode', enabled: lightMode } }, '*');
+      });
+
+      createFromScratch.addEventListener('click', () => {
+        parent.postMessage({ pluginMessage: { type: 'create-from-scratch' } }, '*');
+      });
+
+      supportTask.addEventListener('click', () => {
+        parent.postMessage({ pluginMessage: { type: 'support-task' } }, '*');
+      });
+
+      newScreens.addEventListener('click', () => {
+        parent.postMessage({ pluginMessage: { type: 'new-screens' } }, '*');
+      });
+
+      newAssets.addEventListener('click', () => {
+        parent.postMessage({ pluginMessage: { type: 'new-assets' } }, '*');
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.metaKey || e.ctrlKey) {
+          if (e.key === '1') {
+            e.preventDefault();
+            createFromScratch.click();
+          } else if (e.key === '2') {
+            e.preventDefault();
+            supportTask.click();
+          } else if (e.key === 's' || e.key === 'S') {
+            e.preventDefault();
+            newScreens.click();
+          } else if (e.key === 'a' || e.key === 'A') {
+            e.preventDefault();
+            newAssets.click();
+          }
+        }
+      });
+
+      // Handoff table is only shown on Figma page, not in plugin UI
+    }
+  </script>
+</body>
+</html>
+

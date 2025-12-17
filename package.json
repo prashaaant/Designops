@@ -1,0 +1,22 @@
+{
+  "name": "codex",
+  "version": "1.0.0",
+  "description": "Figma plugin for creating DesignOps pages and managing handoff lists",
+  "main": "code.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "keywords": [
+    "figma",
+    "plugin",
+    "designops"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.83.0",
+    "typescript": "^5.3.3"
+  }
+}
+
