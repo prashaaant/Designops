@@ -22,7 +22,7 @@
     }
 
     .container {
-      padding: 12px 8px;
+      padding: 16px 12px 4px 12px;
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -60,6 +60,8 @@
       margin-bottom: 8px;
       transition: all 0.2s;
       text-align: left;
+      overflow: hidden;
+      position: relative;
     }
 
     .button:hover:not(:disabled) {
@@ -80,12 +82,18 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      width: 100%;
+      gap: 8px;
     }
 
     .button-content {
       display: flex;
       align-items: center;
       gap: 10px;
+      flex: 1 0 0;
+      min-width: 0;
+      overflow: hidden;
+      min-width: 0;
     }
 
     .button-icon {
@@ -106,36 +114,122 @@
       font-weight: 400;
     }
 
+    .button-refresh {
+      background: transparent;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      color: #01AD71;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+      font-size: 10px;
+      margin-left: auto;
+      font-weight: 400;
+      text-transform: capitalize;
+    }
+
+    .button-refresh.visible {
+      display: flex;
+    }
+
+    .button-refresh:hover {
+      color: #01AD71;
+      opacity: 0.8;
+    }
+
+    .button-refresh:active {
+      opacity: 0.6;
+    }
+
+    /* Primary green button when refresh count > 0 */
+    #create-from-scratch.has-refresh {
+      background: #01AD71;
+      border-color: #01AD71;
+      color: #FFFFFF;
+    }
+
+    #create-from-scratch.has-refresh:hover {
+      background: #019A63;
+      border-color: #019A63;
+    }
+
+    #create-from-scratch.has-refresh:active {
+      background: #018855;
+      border-color: #018855;
+    }
+
+    /* White refresh text when button is primary */
+    #create-from-scratch.has-refresh .button-refresh {
+      color: #FFFFFF;
+    }
+
+    #create-from-scratch.has-refresh .button-refresh:hover {
+      color: #FFFFFF;
+      opacity: 0.9;
+    }
+
+    body.light-mode .button-refresh {
+      color: #01AD71;
+    }
+
+    body.light-mode .button-refresh:hover {
+      color: #01AD71;
+      opacity: 0.8;
+    }
+
+    body.light-mode #create-from-scratch.has-refresh {
+      background: #01AD71;
+      border-color: #01AD71;
+      color: #FFFFFF;
+    }
+
+    body.light-mode #create-from-scratch.has-refresh:hover {
+      background: #019A63;
+      border-color: #019A63;
+    }
+
+    body.light-mode #create-from-scratch.has-refresh .button-refresh {
+      color: #FFFFFF;
+    }
+
     .footer {
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       padding: 8px 0;
       border-top: 1px solid #3D3D3D;
       margin-top: auto;
-      gap: 16px;
     }
 
     .theme-toggle {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 8px;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .theme-toggle-label {
       font-size: 11px;
       color: #A0A0A0;
       font-weight: 500;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .toggle-switch {
       position: relative;
-      width: 40px;
+      width: 36px;
       height: 20px;
       background: #3D3D3D;
       border-radius: 10px;
       cursor: pointer;
       transition: background 0.2s;
+      flex-shrink: 0;
     }
 
     .toggle-switch.active {
@@ -145,17 +239,17 @@
     .toggle-switch::after {
       content: '';
       position: absolute;
-      width: 16px;
-      height: 16px;
+      width: 15px;
+      height: 15px;
       border-radius: 50%;
       background: #FFFFFF;
-      top: 2px;
-      left: 2px;
+      top: 2.5px;
+      left: 2.5px;
       transition: transform 0.2s;
     }
 
     .toggle-switch.active::after {
-      transform: translateX(20px);
+      transform: translateX(16px);
     }
 
     /* Light mode styles */
@@ -208,7 +302,10 @@
             <rect width="24" height="24" rx="4" fill="#18A0FB"/>
             <path d="M12 7V17M7 12H17" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <span>New project</span>
+          <span>New file</span>
+        </span>
+        <span class="button-refresh" id="refresh-overview" title="Refresh Overview">
+          <span id="refresh-count">Refresh(0)</span>
         </span>
       </span>
     </button>
@@ -224,20 +321,20 @@
             <path d="M7 17L9 19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             <rect x="17.5" y="4.5" width="3" height="3" rx="0.5" stroke="white" stroke-width="1.5" fill="none"/>
           </svg>
-          <span>Update existing</span>
+          <span>Add header</span>
         </span>
       </span>
     </button>
     <button class="button" id="todo" disabled>
       <span class="button-label">
         <span>Todo</span>
-        <span class="coming-soon">(Coming Soon)</span>
+        <span class="coming-soon">(Coming soon)</span>
       </span>
     </button>
       </div>
 
       <div class="section">
-        <div class="section-title">Handoff</div>
+        <div class="section-title">Handoff list</div>
     <button class="button" id="new-screens">
       <span class="button-label">
         <span class="button-content">
@@ -246,7 +343,7 @@
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
             <path d="M14 2v6h6" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <span>New screens</span>
+          <span>New screen</span>
         </span>
       </span>
     </button>
@@ -258,19 +355,13 @@
             <rect x="6" y="6" width="6" height="6" rx="1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
             <rect x="8" y="8" width="6" height="6" rx="1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
           </svg>
-          <span>New assets</span>
+          <span>New creative</span>
         </span>
       </span>
     </button>
     </div>
     </div>
     <div class="footer">
-      <button class="button" id="sync" disabled>
-        <span class="button-label">
-          <span>Sync</span>
-          <span class="coming-soon">(Coming Soon)</span>
-        </span>
-      </button>
       <div class="theme-toggle">
         <span class="theme-toggle-label">Light Mode</span>
         <div class="toggle-switch" id="theme-toggle"></div>
@@ -307,6 +398,45 @@
       createFromScratch.addEventListener('click', () => {
         parent.postMessage({ pluginMessage: { type: 'create-from-scratch' } }, '*');
       });
+
+      const refreshOverview = document.getElementById('refresh-overview');
+      const refreshCount = document.getElementById('refresh-count');
+      
+      // Listen for refresh count updates from plugin
+      window.addEventListener('message', (event) => {
+        if (event.data.pluginMessage && event.data.pluginMessage.type === 'update-refresh-count') {
+          const count = event.data.pluginMessage.count;
+          if (refreshCount) {
+            refreshCount.textContent = `Refresh(${count})`;
+          }
+          // Show/hide refresh button based on count
+          if (refreshOverview) {
+            if (count > 0) {
+              refreshOverview.classList.add('visible');
+            } else {
+              refreshOverview.classList.remove('visible');
+            }
+          }
+          // Add/remove primary green styling when refresh count > 0
+          if (createFromScratch) {
+            if (count > 0) {
+              createFromScratch.classList.add('has-refresh');
+            } else {
+              createFromScratch.classList.remove('has-refresh');
+            }
+          }
+        }
+      });
+      
+      if (refreshOverview) {
+        refreshOverview.addEventListener('click', (e) => {
+          e.stopPropagation(); // Prevent triggering parent button
+          parent.postMessage({ pluginMessage: { type: 'refresh-overview' } }, '*');
+        });
+      }
+      
+      // Initial count check
+      parent.postMessage({ pluginMessage: { type: 'check-refresh-count' } }, '*');
 
       supportTask.addEventListener('click', () => {
         parent.postMessage({ pluginMessage: { type: 'support-task' } }, '*');
