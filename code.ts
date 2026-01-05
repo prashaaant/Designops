@@ -20,6 +20,7 @@ interface HandoffItem {
   name: string;        // The name of the component/frame (e.g., "Login Button")
   nodeId: string;     // Unique ID that Figma uses to find this item
   section: 'New screen' | 'New creative';  // Which section it belongs to
+  timestamp: string; // When the item was added (formatted timestamp)
 }
 
 // ============================================================================
@@ -346,6 +347,8 @@ function calculateTableHeight(
 function createPage(name: string, emoji: string): PageNode {
   const page = figma.createPage();
   page.name = `${emoji} ${name}`;
+  // Store creation timestamp
+  page.setPluginData('createdAt', new Date().toISOString());
   return page;
 }
 
@@ -442,8 +445,8 @@ async function createOverviewTable(overviewPage: PageNode, pages: PageNode[]): P
   await loadFonts();
 
   // Table configuration
-  const headers = ['Page Name', 'Link', 'Description', 'Misc/Comments'];
-  const columnWidths = [200, 150, 300, 150];
+  const headers = ['Page Name', 'Link', 'Description', 'Misc/Comments', 'Created'];
+  const columnWidths = [200, 150, 300, 150, 120];
   
   // Calculate table dimensions
   const totalWidth = calculateTableWidth(columnWidths);
@@ -543,6 +546,37 @@ async function createOverviewTable(overviewPage: PageNode, pages: PageNode[]): P
     );
     miscText.resize(columnWidths[3], 16);
     rowFrame.appendChild(miscText);
+
+    // Created timestamp column
+    // Get timestamp from page plugin data, or use current time if not set
+    let pageTimestamp = page.getPluginData('createdAt');
+    if (!pageTimestamp) {
+      // If no timestamp stored, set it to current time
+      pageTimestamp = new Date().toISOString();
+      page.setPluginData('createdAt', pageTimestamp);
+    }
+    
+    // Format timestamp: "23 Dec, 2:30 PM"
+    const createdDate = new Date(pageTimestamp);
+    const day = createdDate.getDate();
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = monthNames[createdDate.getMonth()];
+    const hours = createdDate.getHours();
+    const minutes = createdDate.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    const displayMinutes = minutes.toString().padStart(2, '0');
+    const time = `${displayHours}:${displayMinutes} ${ampm}`;
+    const formattedTimestamp = `${day} ${month}, ${time}`;
+    
+    const timestampText = await createTextNode(
+      formattedTimestamp,
+      12,
+      false,
+      descTextColor
+    );
+    timestampText.resize(columnWidths[4], 16);
+    rowFrame.appendChild(timestampText);
 
     tableFrame.appendChild(rowFrame);
     yOffset += 40; // Move down for next row
@@ -652,7 +686,7 @@ async function updateCoverPageName() {
 async function addRowToOverviewTable(tableFrame: FrameNode, page: PageNode, yOffset: number): Promise<void> {
   await loadFonts();
   
-  const columnWidths = [200, 150, 300, 150];
+  const columnWidths = [200, 150, 300, 150, 120];
   const totalWidth = calculateTableWidth(columnWidths);
   const rowBgColor = getRowBackgroundColor();
   const textColor = getTextColor();
@@ -711,6 +745,37 @@ async function addRowToOverviewTable(tableFrame: FrameNode, page: PageNode, yOff
   miscText.resize(columnWidths[3], 16);
   rowFrame.appendChild(miscText);
 
+  // Created timestamp column
+  // Get timestamp from page plugin data, or use current time if not set
+  let pageTimestamp = page.getPluginData('createdAt');
+  if (!pageTimestamp) {
+    // If no timestamp stored, set it to current time
+    pageTimestamp = new Date().toISOString();
+    page.setPluginData('createdAt', pageTimestamp);
+  }
+  
+  // Format timestamp: "23 Dec, 2:30 PM"
+  const createdDate = new Date(pageTimestamp);
+  const day = createdDate.getDate();
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const month = monthNames[createdDate.getMonth()];
+  const hours = createdDate.getHours();
+  const minutes = createdDate.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  const displayMinutes = minutes.toString().padStart(2, '0');
+  const time = `${displayHours}:${displayMinutes} ${ampm}`;
+  const formattedTimestamp = `${day} ${month}, ${time}`;
+  
+  const timestampText = await createTextNode(
+    formattedTimestamp,
+    12,
+    false,
+    descTextColor
+  );
+  timestampText.resize(columnWidths[4], 16);
+  rowFrame.appendChild(timestampText);
+
   tableFrame.appendChild(rowFrame);
 }
 
@@ -765,70 +830,18 @@ async function refreshOverview() {
       return;
     }
 
-    // Get current pages already in the Overview table
-    const currentTablePages: Set<string> = new Set();
-    const findPageLinks = (node: SceneNode): void => {
-      if (node.type === 'TEXT') {
-        const textNode = node as TextNode;
-        if (textNode.hyperlink && typeof textNode.hyperlink === 'object' && 'type' in textNode.hyperlink && textNode.hyperlink.type === 'NODE') {
-          const pageId = (textNode.hyperlink as { type: 'NODE'; value: string }).value;
-          currentTablePages.add(pageId);
-        }
-      }
-      if ('children' in node) {
-        node.children.forEach(findPageLinks);
-      }
-    };
-    findPageLinks(tableFrame);
-
-    // Find pages that need to be added (not in current table)
-    const pagesToAdd: PageNode[] = [];
-    for (const page of allPages) {
-      if (!currentTablePages.has(page.id)) {
-        pagesToAdd.push(page);
-      }
-    }
-
-    // If no new pages and no file name change, nothing to do
-    if (pagesToAdd.length === 0 && !fileNameChanged) {
-      figma.notify('Everything is up to date');
-      return;
-    }
-
-    // Add new pages to the table (only add rows, don't rebuild)
-    if (pagesToAdd.length > 0) {
-      // Calculate current table height and find the last row's y position
-      let maxY = 0;
-      for (const child of tableFrame.children) {
-        if (child.y + child.height > maxY) {
-          maxY = child.y + child.height;
-        }
-      }
-      
-      // Add new rows starting from the bottom
-      let yOffset = maxY;
-      for (const page of pagesToAdd) {
-        await addRowToOverviewTable(tableFrame, page, yOffset);
-        yOffset += 40; // Move down for next row
-      }
-
-      // Update table frame height to accommodate new rows
-      const newHeight = calculateTableHeight(allPages.length);
-      tableFrame.resize(tableFrame.width, newHeight);
-    }
+    // Always rebuild the table to ensure consistency and fix any structural issues
+    // This prevents issues with mismatched column counts or duplicate columns
+    tableFrame.remove();
+    
+    // Recreate with correct structure and all pages
+    await createOverviewTable(overviewPage, allPages);
 
     figma.currentPage = overviewPage;
     
     // Show notification
-    const messages: string[] = [];
-    if (pagesToAdd.length > 0) {
-      messages.push(`Added ${pagesToAdd.length} new page(s)`);
-    }
     if (fileNameChanged) {
-      messages.push('Updated cover page name');
-    }
-    if (messages.length > 0) {
-      figma.notify(`Overview refreshed. ${messages.join('. ')}`);
+      figma.notify('Overview refreshed. Updated cover page name');
     } else {
       figma.notify('Overview refreshed');
     }
@@ -982,6 +995,7 @@ async function createFromScratch() {
     if (!dividerPage) {
       dividerPage = figma.createPage();
       dividerPage.name = '─────────';
+      dividerPage.setPluginData('createdAt', new Date().toISOString());
       figma.root.appendChild(dividerPage);
     }
 
@@ -990,6 +1004,7 @@ async function createFromScratch() {
     if (!explorationsPage) {
       explorationsPage = figma.createPage();
       explorationsPage.name = 'Explorations';
+      explorationsPage.setPluginData('createdAt', new Date().toISOString());
       figma.root.appendChild(explorationsPage);
     }
 
@@ -1157,8 +1172,8 @@ async function renderHandoffTableOnPage(page: PageNode) {
 
     console.log(`Rendering ${handoffItems.length} items`);
 
-    const headers = ['Component Name', 'Link'];
-    const columnWidths = [500, 300];
+    const headers = ['Component Name', 'Link', 'Added'];
+    const columnWidths = [400, 200, 120];
     const totalHeaderWidth = calculateTableWidth(columnWidths);
 
     // Create table header
@@ -1256,6 +1271,16 @@ async function renderHandoffTableOnPage(page: PageNode) {
         linkText.setPluginData('isNodeLink', 'true');
         rowFrame.appendChild(linkText);
 
+        // Timestamp column
+        const timestampText = await createTextNode(
+          item.timestamp || 'N/A',
+          12,
+          false,
+          emptyTextColor
+        );
+        timestampText.resize(columnWidths[2], 16);
+        rowFrame.appendChild(timestampText);
+
         tableFrame.appendChild(rowFrame);
         yOffset += 40;
       }
@@ -1308,14 +1333,28 @@ async function addToHandoff(section: 'New screen' | 'New creative') {
         const exists = handoffItems.some(item => item.nodeId === node.id && item.section === section);
         
         if (!exists) {
+          // Format timestamp: "23 Dec, 2:30 PM"
+          const now = new Date();
+          const day = now.getDate();
+          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          const month = monthNames[now.getMonth()];
+          const hours = now.getHours();
+          const minutes = now.getMinutes();
+          const ampm = hours >= 12 ? 'PM' : 'AM';
+          const displayHours = hours % 12 || 12;
+          const displayMinutes = minutes.toString().padStart(2, '0');
+          const time = `${displayHours}:${displayMinutes} ${ampm}`;
+          const timestamp = `${day} ${month}, ${time}`;
+          
           const item: HandoffItem = {
             name: node.name,
             nodeId: node.id,
-            section: section
+            section: section,
+            timestamp: timestamp
           };
           handoffItems.push(item);
           addedCount++;
-          console.log(`Added item: ${node.name} to ${section}`);
+          console.log(`Added item: ${node.name} to ${section} at ${timestamp}`);
         } else {
           skippedCount++;
           console.log(`Skipped item (already exists): ${node.name}`);
