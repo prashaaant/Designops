@@ -12,7 +12,7 @@
     "plugin",
     "designops"
   ],
-  "author": "",
+  "author": "Prashant Chauhan",
   "license": "MIT",
   "devDependencies": {
     "@figma/plugin-typings": "^1.83.0",

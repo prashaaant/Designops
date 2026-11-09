@@ -1,4 +1,4 @@
-# Codex - Figma Plugin
+# Codex - Figma Plugin (Designops)
 
 A Figma plugin for creating organized DesignOps project structures, managing handoff lists, and streamlining design workflows.
 
@@ -55,3 +55,7 @@ npm run watch
 - Node.js 14+
 - Figma Desktop App
 
+
+## License
+
+MIT. See [LICENSE](LICENSE).
